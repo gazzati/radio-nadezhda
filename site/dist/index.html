@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eef3f8">
+  <meta name="description" content="Интернет-радио церкви «Надежда». Музыка и слова, с которыми хочется идти дальше.">
+  <title>Радио «Надежда»</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js" defer></script>
+  <script src="player.js" defer></script>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <a class="brand" href="./" aria-label="Радио «Надежда», главная">
+        <svg class="brand-icon" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M7 29V11h6l14 18h6V11" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M18 8h4m-2-2v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>Надежда<span class="brand-caption">интернет-радио</span></span>
+      </a>
+      <span class="header-note">Радио нашей церкви</span>
+    </header>
+
+    <main id="main">
+      <div class="intro">
+        <h1>Пусть звучит<br>надежда.</h1>
+        <p class="intro-copy">Музыка и слова, с которыми<br class="desktop-break"> хочется идти дальше.</p>
+        <p class="welcome">Рядом с вами.<br>Дома, в дороге, каждый день.</p>
+      </div>
+
+      <section class="radio" aria-label="Радиоплеер">
+        <div class="radio-top"><span>Радио «Надежда»</span><span class="status-tag" id="statusTag"><span class="status-dot"></span><span id="statusLabel">Скоро в эфире</span></span></div>
+        <div class="artwork" aria-hidden="true">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="sun"></div>
+          <div class="horizon"></div>
+          <div class="waves"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="player-info">
+          <h2 id="trackTitle">Всё начинается с надежды</h2>
+          <p id="playerMessage" role="status" aria-live="polite">Мы готовим эфир. Скоро здесь зазвучит радио.</p>
+        </div>
+        <button class="play-button" id="playButton" type="button" disabled aria-label="Эфир готовится">
+          <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13L18 12z"/></svg>
+          <span id="playLabel">Скоро начнём</span>
+        </button>
+        <div class="volume-control">
+          <button class="mute-button" id="muteButton" type="button" aria-label="Выключить звук" aria-pressed="false" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-muted" d="m16 9 5 6m0-6-5 6"/></svg>
+          </button>
+          <label class="sr-only" for="volume">Громкость</label>
+          <input id="volume" type="range" min="0" max="100" value="70" disabled>
+          <output id="volumeValue" for="volume">70%</output>
+        </div>
+        <audio id="radioAudio" preload="none"></audio>
+      </section>
+    </main>
+
+    <footer class="footer"><span>Проект церкви «Надежда»</span><span>Будем на одной волне.</span></footer>
+  </div>
+</body>
+</html>
