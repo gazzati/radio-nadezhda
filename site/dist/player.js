@@ -33,7 +33,7 @@
     label.textContent = active ? "Остановить эфир" : loading ? "Отменить подключение" : next === "error" ? "Попробовать снова" : "Слушать эфир";
     button.setAttribute("aria-label", label.textContent);
     status.textContent = active ? "В эфире" : loading ? "Подключение" : next === "error" ? "Нет соединения" : "Онлайн-радио";
-    title.textContent = config.stationName || "Радио «Надежда»";
+    title.textContent = config.stationName || "Территория гор";
     message.textContent = detail || (active ? "Вы слушаете прямой эфир." : loading ? "Подключаемся к эфиру…" : "Нажмите «Слушать эфир», чтобы присоединиться.");
     if ("mediaSession" in navigator) navigator.mediaSession.playbackState = active ? "playing" : "none";
   }
@@ -93,7 +93,7 @@
     updateVolume();
   });
   if ("mediaSession" in navigator) {
-    if ("MediaMetadata" in window) navigator.mediaSession.metadata = new MediaMetadata({ title: config.stationName || "Радио «Надежда»", artist: "Прямой эфир" });
+    if ("MediaMetadata" in window) navigator.mediaSession.metadata = new MediaMetadata({ title: config.stationName || "Территория гор", artist: "Прямой эфир" });
     for (const [action, handler] of Object.entries({play, pause: stop, stop})) {
       try { navigator.mediaSession.setActionHandler(action, handler); } catch { /* Unsupported media action. */ }
     }

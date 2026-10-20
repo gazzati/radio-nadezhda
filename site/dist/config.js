@@ -2,5 +2,5 @@
 // Не добавляйте сюда пароли и ключи доступа: этот файл доступен посетителям.
 window.RADIO_CONFIG = Object.freeze({
   streamUrl: "",
-  stationName: "Радио «Надежда»"
+  stationName: "Территория гор"
 });
