@@ -70,6 +70,7 @@
     volumeValue.textContent = `${Math.round(audio.volume * 100)}%`;
   }
   audio.volume = Number(volume.value) / 100;
+  updateVolume();
   volume.addEventListener("input", () => { audio.volume = Number(volume.value) / 100; audio.muted = false; updateVolume(); });
   mute.addEventListener("click", () => { audio.muted = !audio.muted; updateVolume(); });
   if ("mediaSession" in navigator) {
