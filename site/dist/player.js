@@ -14,13 +14,10 @@
   const volumeValue = document.getElementById("volumeValue");
   const playPath = '<path d="M8 5.5v13L18 12z"/>';
   const stopPath = '<rect x="6" y="6" width="12" height="12" rx="1"/>';
-  let state = "unconfigured";
-  let attempt = 0;
+  const tracks = Array.isArray(config.tracks) ? config.tracks : [];
+  let state = "ready";
   let timeout;
-  let stream;
-
-  try { stream = new URL(config.streamUrl); } catch { return; }
-  if (stream.protocol !== "https:") return;
+  let currentTrack;
 
   function render(next, detail) {
     state = next;
@@ -29,53 +26,42 @@
     radio.classList.toggle("is-playing", active);
     radio.classList.toggle("is-loading", loading);
     button.disabled = false;
+    mute.disabled = false;
+    volume.disabled = false;
     icon.innerHTML = active || loading ? stopPath : playPath;
-    label.textContent = active ? "Остановить эфир" : loading ? "Отменить подключение" : next === "error" ? "Попробовать снова" : "Слушать эфир";
+    label.textContent = active ? "Остановить" : loading ? "Отменить запуск" : next === "error" ? "Попробовать снова" : "Слушать радио";
     button.setAttribute("aria-label", label.textContent);
-    status.textContent = active ? "В эфире" : loading ? "Подключение" : next === "error" ? "Нет соединения" : "Онлайн-радио";
-    title.textContent = config.stationName || "Территория гор";
-    message.textContent = detail || (active ? "Вы слушаете прямой эфир." : loading ? "Подключаемся к эфиру…" : "Нажмите «Слушать эфир», чтобы присоединиться.");
+    status.textContent = active ? "В эфире" : loading ? "Запуск" : next === "error" ? "Ошибка" : "Готово к эфиру";
+    title.textContent = currentTrack?.title || config.stationName || "Территория гор";
+    message.textContent = detail || (active ? "Вы слушаете радио «Территория гор»." : "Нажмите кнопку, чтобы начать воспроизведение.");
     if ("mediaSession" in navigator) navigator.mediaSession.playbackState = active ? "playing" : "none";
   }
 
   function release() {
     clearTimeout(timeout);
-    attempt++;
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
   }
-  function stop() { render("ready"); release(); }
-  function fail() {
-    render("error", "Не удалось подключиться к эфиру. Проверьте интернет и попробуйте снова.");
-    release();
-  }
-  function watchTimeout() {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => { if (state === "loading") fail(); }, 15000);
+  function stop() { release(); render("ready"); }
+  function fail() { release(); render("error", "Не удалось воспроизвести композицию. Попробуйте ещё раз."); }
+  function chooseTrack() {
+    if (!tracks.length) return null;
+    return tracks[Math.floor(Math.random() * tracks.length)];
   }
   function play() {
     if (state === "playing" || state === "loading") return;
-    const current = ++attempt;
-    render("loading");
-    audio.src = stream.href;
-    watchTimeout();
-    audio.play().catch(() => { if (current === attempt) fail(); });
+    currentTrack = chooseTrack();
+    if (!currentTrack) { render("error", "Музыка пока не добавлена."); return; }
+    render("loading", `Загружаем: ${currentTrack.title}`);
+    audio.src = currentTrack.src;
+    audio.play().catch(fail);
   }
   button.addEventListener("click", () => state === "playing" || state === "loading" ? stop() : play());
-  audio.addEventListener("playing", () => {
-    if (state !== "loading" && state !== "playing") return;
-    clearTimeout(timeout);
-    render("playing");
-  });
-  audio.addEventListener("waiting", () => {
-    if (state !== "playing") return;
-    render("loading", "Связь прервалась. Ждём продолжения эфира…");
-    watchTimeout();
-  });
-  audio.addEventListener("error", () => { if (state === "loading" || state === "playing") fail(); });
-  audio.addEventListener("ended", () => { if (state === "loading" || state === "playing") fail(); });
-  audio.addEventListener("pause", () => { if (state === "playing") stop(); });
+  audio.addEventListener("playing", () => render("playing"));
+  audio.addEventListener("error", fail);
+  audio.addEventListener("ended", play);
+  audio.addEventListener("pause", () => { if (state === "playing") render("ready"); });
 
   function updateVolume() {
     const silent = audio.muted || audio.volume === 0;
@@ -84,19 +70,11 @@
     volumeValue.textContent = `${Math.round(audio.volume * 100)}%`;
   }
   audio.volume = Number(volume.value) / 100;
-  volume.disabled = false;
-  mute.disabled = false;
   volume.addEventListener("input", () => { audio.volume = Number(volume.value) / 100; audio.muted = false; updateVolume(); });
-  mute.addEventListener("click", () => {
-    if (audio.volume === 0) { audio.volume = .7; volume.value = "70"; audio.muted = false; }
-    else audio.muted = !audio.muted;
-    updateVolume();
-  });
+  mute.addEventListener("click", () => { audio.muted = !audio.muted; updateVolume(); });
   if ("mediaSession" in navigator) {
-    if ("MediaMetadata" in window) navigator.mediaSession.metadata = new MediaMetadata({ title: config.stationName || "Территория гор", artist: "Прямой эфир" });
-    for (const [action, handler] of Object.entries({play, pause: stop, stop})) {
-      try { navigator.mediaSession.setActionHandler(action, handler); } catch { /* Unsupported media action. */ }
-    }
+    if ("MediaMetadata" in window) navigator.mediaSession.metadata = new MediaMetadata({ title: config.stationName || "Территория гор", artist: "Интернет-радио" });
+    for (const [action, handler] of Object.entries({ play, pause: stop, stop })) { try { navigator.mediaSession.setActionHandler(action, handler); } catch {} }
   }
   render("ready");
 })();
