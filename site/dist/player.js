@@ -18,6 +18,19 @@
   let state = "ready";
   let timeout;
   let currentTrack;
+  let audioContext;
+  let gainNode;
+
+  function initAudioGraph() {
+    if (audioContext) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    audioContext = new AudioContextClass();
+    gainNode = audioContext.createGain();
+    const source = audioContext.createMediaElementSource(audio);
+    source.connect(gainNode).connect(audioContext.destination);
+    gainNode.gain.value = Number(volume.value) / 100;
+  }
 
   function render(next, detail) {
     state = next;
@@ -52,6 +65,8 @@
   function play() {
     if (state === "playing" || state === "loading") return;
     currentTrack = chooseTrack();
+    initAudioGraph();
+    if (audioContext && audioContext.state === "suspended") audioContext.resume();
     if (!currentTrack) { render("error", "Музыка пока не добавлена."); return; }
     render("loading", `Загружаем: ${currentTrack.title}`);
     audio.src = currentTrack.src;
@@ -64,15 +79,35 @@
   audio.addEventListener("pause", () => { if (state === "playing") render("ready"); });
 
   function updateVolume() {
-    const silent = audio.muted || audio.volume === 0;
+    const silent = audio.muted || (gainNode ? gainNode.gain.value === 0 : audio.volume === 0);
     mute.setAttribute("aria-pressed", String(silent));
     mute.setAttribute("aria-label", silent ? "Включить звук" : "Выключить звук");
-    volumeValue.textContent = `${Math.round(audio.volume * 100)}%`;
+    volumeValue.textContent = `${Math.round(Number(volume.value))}%`;
   }
-  audio.volume = Number(volume.value) / 100;
+  audio.volume = 1;
   updateVolume();
-  volume.addEventListener("input", () => { audio.volume = Number(volume.value) / 100; audio.muted = false; updateVolume(); });
-  mute.addEventListener("click", () => { audio.muted = !audio.muted; updateVolume(); });
+  volume.addEventListener("input", () => {
+    const nextVolume = Number(volume.value) / 100;
+    initAudioGraph();
+    if (audioContext && audioContext.state === "suspended") audioContext.resume();
+    if (gainNode) gainNode.gain.value = nextVolume;
+    audio.volume = nextVolume;
+    audio.muted = false;
+    updateVolume();
+  });
+  mute.addEventListener("click", () => {
+    initAudioGraph();
+    const silent = audio.muted || (gainNode && gainNode.gain.value === 0);
+    if (silent) {
+      audio.muted = false;
+      volume.value = volume.value === "0" ? "70" : volume.value;
+      if (gainNode) gainNode.gain.value = Number(volume.value) / 100;
+    } else {
+      audio.muted = true;
+      if (gainNode) gainNode.gain.value = 0;
+    }
+    updateVolume();
+  });
   if ("mediaSession" in navigator) {
     if ("MediaMetadata" in window) navigator.mediaSession.metadata = new MediaMetadata({ title: config.stationName || "Территория гор", artist: "Интернет-радио" });
     for (const [action, handler] of Object.entries({ play, pause: stop, stop })) { try { navigator.mediaSession.setActionHandler(action, handler); } catch {} }
