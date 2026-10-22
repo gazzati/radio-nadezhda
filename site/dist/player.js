@@ -66,7 +66,7 @@
     currentTrack = track;
     initAudioGraph();
     if (audioContext && audioContext.state === "suspended") audioContext.resume();
-    render("loading", `Загружаем: ${currentTrack.title}`);
+    render("loading", currentTrack === config.jingle ? "Звучит джингл «Территория гор»" : `Загружаем: ${currentTrack.title}`);
     audio.src = currentTrack.src;
     audio.play().catch(fail);
   }
