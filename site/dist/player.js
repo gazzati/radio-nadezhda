@@ -62,20 +62,28 @@
     if (!tracks.length) return null;
     return tracks[Math.floor(Math.random() * tracks.length)];
   }
-  function play() {
-    if (state === "playing" || state === "loading") return;
-    currentTrack = chooseTrack();
+  function startTrack(track) {
+    currentTrack = track;
     initAudioGraph();
     if (audioContext && audioContext.state === "suspended") audioContext.resume();
-    if (!currentTrack) { render("error", "Музыка пока не добавлена."); return; }
     render("loading", `Загружаем: ${currentTrack.title}`);
     audio.src = currentTrack.src;
     audio.play().catch(fail);
   }
+  function play() {
+    if (state === "playing" || state === "loading") return;
+    const firstTrack = config.jingle || chooseTrack();
+    if (!firstTrack) { render("error", "Музыка пока не добавлена."); return; }
+    startTrack(firstTrack);
+  }
+  function playNext() {
+    const nextTrack = chooseTrack();
+    if (nextTrack) startTrack(nextTrack); else fail();
+  }
   button.addEventListener("click", () => state === "playing" || state === "loading" ? stop() : play());
   audio.addEventListener("playing", () => render("playing"));
   audio.addEventListener("error", fail);
-  audio.addEventListener("ended", play);
+  audio.addEventListener("ended", playNext);
   audio.addEventListener("pause", () => { if (state === "playing") render("ready"); });
 
   function updateVolume() {
