@@ -5,6 +5,7 @@ window.RADIO_CONFIG = Object.freeze({
   stationName: "Территория гор",
   jingle: { title: "Территория гор", src: "audio/jingle-territoriya-gor.mp3" },
   tracks: [
-    { title: "Благодарим", src: "audio/Zarya_Kavkaza_-_Blagodarim_80085520.mp3" }
+    { title: "Благодарим", src: "audio/Zarya_Kavkaza_-_Blagodarim_80085520.mp3" },
+    { title: "Сердце Кавказа", src: "audio/serdce-kavkaza.mp3" }
   ]
 });
